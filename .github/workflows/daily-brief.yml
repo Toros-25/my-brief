@@ -2,7 +2,7 @@ name: Daily Brief
 
 on:
   schedule:
-    - cron: '30 13 * * *'  # 8:30 AM EST (UTC-5). During EDT (Mar–Nov) this fires at 9:30 AM ET.
+    - cron: '30 12 * * *'  # 8:30 AM EDT (UTC-4). During EST (Nov–Mar) this fires at 7:30 AM ET.
   workflow_dispatch:        # allows manual trigger from the Actions tab any time
 
 jobs:
