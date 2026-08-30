@@ -101,16 +101,18 @@ _PATTERNS = [re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE) for kw in 
 HEADERS = {"User-Agent": "WildcatBrief/1.0 (personal digest bot)"}
 
 
-def _parse_published(entry) -> str:
+def _parse_published(entry) -> tuple[datetime | None, str]:
+    # Returns both a sortable datetime and a display string from the same parse.
+    # Keeping them together avoids parsing the timestamp twice.
     for attr in ("published_parsed", "updated_parsed"):
         t = getattr(entry, attr, None)
         if t:
             try:
                 dt = datetime(*t[:6], tzinfo=timezone.utc)
-                return dt.strftime("%b %d, %I:%M %p UTC")
+                return dt, dt.strftime("%b %d, %I:%M %p UTC")
             except Exception:
                 pass
-    return ""
+    return None, ""
 
 
 def _is_relevant(entry) -> bool:
@@ -118,9 +120,12 @@ def _is_relevant(entry) -> bool:
     return any(p.search(text) for p in _PATTERNS)
 
 
+MAX_ARTICLES = 10
+
+
 def fetch_news() -> list[dict]:
     results = []
-    seen_urls: set[str] = set()  # deduplication: tracks links already added
+    seen_urls: set[str] = set()
 
     for feed_cfg in FEEDS:
         limit = feed_cfg.get("limit", _DEFAULT_LIMIT)
@@ -136,16 +141,30 @@ def fetch_news() -> list[dict]:
             if not _is_relevant(entry):
                 continue
             link = entry.get("link", "")
-            if link in seen_urls:  # skip if we've already added this article
+            if link in seen_urls:
                 continue
             seen_urls.add(link)
+            dt, pub_str = _parse_published(entry)
             results.append({
                 "source": feed_cfg["source"],
                 "title": entry.get("title", "").strip(),
                 "link": link,
-                "published": _parse_published(entry),
+                "published": pub_str,
                 "summary": entry.get("summary", "").strip(),
+                "_dt": dt,  # used for sorting; stripped before returning
             })
+
+    # Sort all matched articles newest-first, then take the top 10.
+    # Articles with no parseable date sort to the bottom (None < any datetime
+    # would error, so we use a sentinel: datetime.min for missing timestamps).
+    results.sort(key=lambda a: a["_dt"] or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    results = results[:MAX_ARTICLES]
+
+    # Remove the internal sort key before returning — callers and the template
+    # don't need it and it would clutter the dict.
+    for a in results:
+        del a["_dt"]
+
     return results
 
 
