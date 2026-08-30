@@ -14,14 +14,20 @@ Dead feeds tested and dropped:
     domain); dropped as duplicate.
 
 Keyword filter: keeps only entries whose title or summary contains at least one target phrase.
+Applied uniformly to every entry from every feed — no source is exempt, including
+immigration-focused feeds that cover many topics outside F-1/student/work-visa scope.
+
 Rationale for substring matching vs. an NLP classifier:
-  - These keywords are domain-specific acronyms and exact legal terms (SEVIS, OPT, CPT, H-1B),
-    where substring matching is both precise and recall-complete — a classifier adds complexity
-    without meaningful accuracy gain for this vocabulary.
+  - These keywords are exact legal terms and acronyms (SEVIS, OPT, CPT, H-1B, F-1),
+    where substring matching is both precise and recall-complete — a classifier adds
+    complexity without meaningful accuracy gain for this vocabulary.
   - It is deterministic, auditable, and dependency-free.
 Trade-offs:
-  - Miss: an article that discusses F-1 visa policy without using any listed phrase.
-  - False positive: "immigration" in an unrelated context (e.g., European migration crisis).
+  - Miss: an article discussing F-1 or H-1B policy without using any listed phrase.
+  - False positive: rare, since all remaining terms are highly domain-specific.
+  - "immigration" and "deportation" are intentionally excluded — they are broad enough
+    to match general enforcement stories (ICE operations, border policy, public figures
+    being deported) that have nothing to do with F-1/student/work visas.
 """
 
 import feedparser
@@ -39,19 +45,19 @@ FEEDS = [
 
 HEADLINES_PER_FEED = 10  # cast a wider net pre-filter; digest picks top N after
 
-# Match full phrases only — do NOT add bare "visa" here, because it would match
-# unrelated results about the Visa credit card company.
 # All patterns use word boundaries (\b...\b) so short acronyms like OPT and CPT
-# are not accidentally triggered by common English substrings (e.g. "option",
-# "opted", "script") — bare substring matching on 3-letter tokens produces too
-# many false positives.
+# are not triggered by common English substrings (e.g. "option", "script").
+# Do NOT add bare "visa" — matches the Visa credit card company.
+# Do NOT add "immigration" or "deportation" — too broad; pulls in ICE enforcement,
+# border policy, and deportation of public figures with no F-1/H-1B relevance.
 _RAW_KEYWORDS = [
-    "f-1 visa", "f1 visa", "student visa",
-    "international student", "international students",
-    "OPT", "CPT", "STEM OPT",
-    "H-1B", "H1B",
-    "SEVP", "SEVIS", "USCIS",
-    "immigration", "deportation",
+    "F-1", "F-1 visa", "F1 visa",
+    "international student", "international students", "student visa",
+    "OPT", "CPT", "STEM OPT", "cap-gap",
+    "SEVP", "SEVIS",
+    "H-1B", "H1B", "H-1B cap", "H-1B lottery",
+    "work visa", "employment-based visa",
+    "high-skilled worker", "high-skilled workers",
 ]
 _PATTERNS = [re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE) for kw in _RAW_KEYWORDS]
 
