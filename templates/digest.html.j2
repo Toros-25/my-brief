@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Morning Brief — {{ date }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+  <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+    <!-- Header -->
+    <tr>
+      <td style="background:#4E2A84;border-radius:10px 10px 0 0;padding:28px 32px;">
+        <p style="margin:0;color:#c8a9e9;font-size:13px;letter-spacing:1px;text-transform:uppercase;">Your Morning Brief</p>
+        <h1 style="margin:6px 0 0;color:#ffffff;font-size:24px;font-weight:700;">{{ date }}</h1>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="background:#ffffff;padding:0 32px 32px;border-radius:0 0 10px 10px;">
+
+        <!-- Weather -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+          <tr>
+            <td style="border-bottom:2px solid #4E2A84;padding-bottom:6px;">
+              <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4E2A84;">Weather</h2>
+            </td>
+          </tr>
+          {% if weather_list %}
+          {% for w in weather_list %}
+          <tr>
+            <td style="padding-top:20px;">
+              <!-- City name -->
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#4E2A84;">{{ w.location }}</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <!-- Left: temp + condition -->
+                  <td style="vertical-align:top;width:50%;">
+                    <p style="margin:0;font-size:30px;font-weight:700;color:#1a1a1a;line-height:1;">{{ w.temp_f }}°F <span style="font-size:20px;color:#666;">/ {{ w.temp_c }}°C</span></p>
+                    <p style="margin:6px 0 2px;font-size:14px;color:#444;">{{ w.condition }}</p>
+                    <p style="margin:0;font-size:12px;color:#888;">Feels like {{ w.feels_like_f }}°F / {{ w.feels_like_c }}°C</p>
+                  </td>
+                  <!-- Right: high/low + wind -->
+                  <td style="vertical-align:top;width:50%;text-align:right;">
+                    <p style="margin:0;font-size:13px;color:#555;">
+                      High <strong style="color:#1a1a1a;">{{ w.high_f }}°F / {{ w.high_c }}°C</strong>
+                    </p>
+                    <p style="margin:5px 0 0;font-size:13px;color:#555;">
+                      Low <strong style="color:#1a1a1a;">{{ w.low_f }}°F / {{ w.low_c }}°C</strong>
+                    </p>
+                    <p style="margin:5px 0 0;font-size:13px;color:#555;">
+                      Wind <strong style="color:#1a1a1a;">{{ w.wind_mph }} mph</strong>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <!-- Rain forecast -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                <tr>
+                  <td style="background:#f7f4fc;border-left:3px solid #4E2A84;border-radius:0 4px 4px 0;padding:8px 12px;">
+                    <p style="margin:0;font-size:12px;color:#4E2A84;font-weight:600;">&#9730; Rain</p>
+                    <p style="margin:3px 0 0;font-size:13px;color:#333;">{{ w.rain_summary }}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {% if not loop.last %}
+          <tr><td style="padding-top:16px;"><hr style="border:none;border-top:1px solid #eeeeee;margin:0;"></td></tr>
+          {% endif %}
+          {% endfor %}
+          {% else %}
+          <tr><td style="padding-top:12px;font-size:14px;color:#888;">Weather unavailable.</td></tr>
+          {% endif %}
+        </table>
+
+        <!-- Calendar -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:32px;">
+          <tr>
+            <td style="border-bottom:2px solid #4E2A84;padding-bottom:6px;">
+              <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4E2A84;">Today's Calendar</h2>
+            </td>
+          </tr>
+          {% if calendar_events %}
+          {% for event in calendar_events %}
+          <tr>
+            <td style="padding-top:14px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="width:80px;vertical-align:top;">
+                    <p style="margin:0;font-size:12px;color:#4E2A84;font-weight:600;">{{ event.start }}</p>
+                  </td>
+                  <td style="vertical-align:top;">
+                    <p style="margin:0;font-size:14px;font-weight:600;color:#1a1a1a;">{{ event.title }}</p>
+                    {% if event.location %}
+                    <p style="margin:2px 0 0;font-size:12px;color:#888;">{{ event.location }}</p>
+                    {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr><td style="padding-top:12px;font-size:14px;color:#888;">No events scheduled today.</td></tr>
+          {% endif %}
+        </table>
+
+        <!-- News -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:32px;">
+          <tr>
+            <td style="border-bottom:2px solid #4E2A84;padding-bottom:6px;">
+              <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4E2A84;">Immigration &amp; Visa News</h2>
+            </td>
+          </tr>
+          {% if news %}
+          {% for article in news %}
+          <tr>
+            <td style="padding-top:14px;border-bottom:1px solid #f0f0f0;padding-bottom:14px;">
+              <p style="margin:0 0 3px;font-size:11px;font-weight:700;color:#4E2A84;text-transform:uppercase;letter-spacing:0.5px;">{{ article.source }}{% if article.published %} · {{ article.published }}{% endif %}</p>
+              <a href="{{ article.link }}" style="text-decoration:none;">
+                <p style="margin:0;font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.4;">{{ article.title }}</p>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr><td style="padding-top:12px;font-size:14px;color:#888;">No matching news articles today.</td></tr>
+          {% endif %}
+        </table>
+
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="padding:20px 0;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#aaa;">Your Morning Brief · Generated {{ generated_at }} CT</p>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>
